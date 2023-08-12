@@ -9,10 +9,10 @@ str(data)
 #converting year column to date format
 data$year = as.Date(paste(data$year, "-01-01", sep=""))
 # Create ts objects for GDP and CO2
-ts_gdp = ts(data$Real.GDP....basis.2011.year., start = c(1800, 1), frequency = 1)
-ts_co2_mt = ts(data$CO2.in.metric.tons., start = c(1800, 1), frequency = 1)
-ts_co2_mil_mt = ts(data$CO2..in.million.metric.tons., start = c(1820, 1), frequency = 1)
-ts_pop = ts(data$Population, start = c(1800, 1), frequency = 1)
+ts_gdp = ts(data$Real.GDP....basis.2011.year., start = c(1800, 1), frequency = 12)
+ts_co2_mt = ts(data$CO2.in.metric.tons., start = c(1800, 1), frequency = 12)
+ts_co2_mil_mt = ts(data$CO2..in.million.metric.tons., start = c(1820, 1), frequency = 12)
+ts_pop = ts(data$Population, start = c(1800, 1), frequency = 12)
 #plotting the ts objects
 install.packages("ggplot2")
 library('ggplot2')
@@ -28,13 +28,17 @@ autoplot(ts_co2_mt)+
 autoplot(ts_pop)+
   ggtitle('US Population')+xlab('Year')+ylab('GDP')
 
-df=ts(data[,3:7],start=c(1800,1),frequency=1)
+combined_ts=cbind(ts_gdp,ts_co2_mt,ts_pop)
 
 #gdp and co2
-autoplot(df[,c('Real.GDP....basis.2011.year.','CO2.in.metric.tons.')],facets = TRUE)+
+autoplot(combined_ts[,c('ts_gdp','ts_co2_mt')],facets = TRUE)+
   ggtitle('US CO2 emission vs Population')+xlab('Year')+ylab('')
 #co2 and pop
-autoplot(df[,c('Population','CO2.in.metric.tons.')],facets = TRUE)+
+autoplot(combined_ts[,c('ts_pop','ts_co2_mt')],facets = TRUE)+
   ggtitle('US CO2 emission vs Population')+xlab('Year')+ylab('GDP')
 #Scatter plot
-qplot(Population,CO2.in.metric.tons.,data = as.data.frame(df))+ylab('CO2 emission in mt')+xlab("Population")
+qplot(ts_co2_mt,ts_pop,data = as.data.frame(combined_ts))+ylab('CO2 emission in mt')+xlab("Population")
+#training and test data
+
+#classical decomposition
+decompose(ts_gdp,type='multiplicative')+autoplot()+xlab('Year')+ggtitle('Classic Decomposition')
